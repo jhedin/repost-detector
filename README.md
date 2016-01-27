@@ -1,2 +1,3 @@
-# image-comparer
-Decides whether images are similar using ORB and FLANN, with checks on the homography
+# repost-detector
+
+checks submissions to /r/facepalm to make sure they aremn't reposts by detecting local features
