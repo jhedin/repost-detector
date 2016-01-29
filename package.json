@@ -1,0 +1,26 @@
+{
+  "name": "image-comparer",
+  "version": "0.0.0",
+  "description": "Compares images with ORB, using FLANN and homography checks",
+  "main": "src/index.js",
+  "dependencies": {
+    "jawfr": "^0.1.0",
+    "mongodb": "^2.1.4",
+    "git+https://git@github.com/jhedin/node-opencv.git"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jhedin/repost-detector"
+  },
+  "keywords": [
+    "ORB",
+    "FLANN",
+    "homography"
+  ],
+  "author": "James Hedin <jhedin10@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jhedin/image-comparer/issues"
+  },
+  "homepage": "https://github.com/jhedin/repost-detector"
+}
