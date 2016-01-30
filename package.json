@@ -1,12 +1,11 @@
 {
-  "name": "image-comparer",
+  "name": "repost-detector",
   "version": "0.0.0",
   "description": "Compares images with ORB, using FLANN and homography checks",
   "main": "src/index.js",
   "dependencies": {
     "jawfr": "^0.1.0",
-    "mongodb": "^2.1.4",
-    "git+https://git@github.com/jhedin/node-opencv.git"
+    "mongodb": "^2.1.4"
   },
   "repository": {
     "type": "git",

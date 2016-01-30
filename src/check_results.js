@@ -36,7 +36,7 @@ var maskTextAsync = Promise.promisify(cv.MaskText);
 // connect to all
 jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({})
 .then(function() {
-	this.fp = jawfr.getSubreddit('facepalmtestbed');
+	this.fp = jawfr.getSubreddit('facepalm');
 
 	this.names = [];
 

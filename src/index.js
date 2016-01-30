@@ -22,7 +22,7 @@ var detectAndComputeAsync = Promise.promisify(cv.DetectAndCompute);
 var filteredMatchAsync = Promise.promisify(cv.FilteredMatch, {multiArgs: true});
 var maskTextAsync = Promise.promisify(cv.MaskText);
 
-var url = 'mongodb://localhost:27017/facepalmtestbed';
+var url = 'mongodb://localhost:27017/facepalm';
 
 
 // connect to all
@@ -34,7 +34,7 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 	console.log(err);
 })
 .then(function(db) {
-	this.fp = jawfr.getSubreddit('facepalmtestbed');
+	this.fp = jawfr.getSubreddit('facepalm');
 	this.info = db.collection("info");
 	this.dblinks = db.collection("links");
 	
@@ -66,6 +66,7 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 			    	stream.on("finish", function(){
 			         	resolve();
 				    });
+				    stream.on('error', function(e){reject(e)});
 				
 				}).then(function(){
 					return readImageAsync("./" + link.name + ".jpg");
@@ -76,20 +77,25 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 				}).then(function(image){
 					// clean up the download
 					fs.unlinkSync("./" + link.name + ".jpg");
-					//image.save("./" + link.name + "_masked.jpg");
 
 					return Promise.props({
 						features: detectAndComputeAsync(image),
 						name: link.name,
-						user: link.author,
+						author: link.author,
 						created_utc: link.created_utc,
 						repost: []
 					});
+				}).catch(function(e){
+					return {name:link.name, user: link.user, created_utc:link.created_utc, error:e};
 				});
-			}, {concurrency: 5})
+			}, {concurrency: 8})
 
 		}).then(function(docs) {
 			
+			// reddit can't analyse every post to fiind an image; if there's no preview,
+			// we cant check if its a repost
+			// todo: try to find an image for no preview situations
+			// removed posts also havve no previews
 			this.docs = docs.filter(function(doc){
 				if(doc.nopreview || doc.features.keypoints.length == 0) 
 					return false;
@@ -103,17 +109,19 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 			console.log(this.docs.length + " new links");
 			
 			return this.dblinks.insertManyAsync(this.docs)
+
+			// done preprocessing/saving, now compare the new links against everything we've seen before
 		}).then(function() {
 			var cursor = this.dblinks.find({});
 			return cursor.toArrayAsync();
 
 		}).then(function(savedLinks){
 
+			// turns the saved matrix data into something opencv can read
 			this.docs = this.docs.map(function(item){
 				item.features.descriptors = parseMatrix(item.features.descriptors)
 				return item;
 			});
-
 			savedLinks = savedLinks.map(function(item){
 				item.features.descriptors = parseMatrix(item.features.descriptors)
 				return item;
@@ -122,13 +130,14 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 			return Promise.each(this.docs, function(nlink){
 				
 				return Promise.each(savedLinks, function(slink) {
-					
+						
+						// this is the same link, or we don't know which would be the repost
 			    		if(nlink.name == slink.name)
 							return;
-
 						if(nlink.created_utc < slink.created_utc)
 							return;
 
+						// this is an inefficient way of checking the condition of the homography matrix
 						return Promise.props({
 							nfirst: filteredMatchAsync(nlink.features, slink.features),
 							sfirst: filteredMatchAsync(slink.features, nlink.features)
@@ -139,27 +148,23 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 							var n_good = res.nfirst[1];
 							var d_h = res.nfirst[2];
 							var n_h = res.nfirst[3];
-							if((d_h < 30 && n_h > 12) || (d_h < 20 && n_h > 5)) {
+							if((d_h < 35 && n_h > 12) || (d_h < 20 && n_h > 6) || (d_h < 12 && n_h > 3)) {
 								d_good = res.sfirst[0];
 								n_good = res.sfirst[1];
 								d_h = res.sfirst[2];
 								n_h = res.sfirst[3];
-								if((d_h < 30 && n_h > 12) || (d_h < 20 && n_h > 5)) {
-									console.log(nlink.name, slink.name, res)
+								if((d_h < 35 && n_h > 12) || (d_h < 20 && n_h > 6) || (d_h < 12 && n_h > 3)) {
 									nlink.repost.push({
 										name: slink.name, 
-										d_good: d_good,
-										n_good: n_good, 
-										d_h:d_h, 
-										n_h: n_h
+										res: res
 									});
 								}
 							}
-						}).catch(function(err){reject(err)});
+						}).catch(function(err){console.log("error while matching",err)});
 					
 				}, {concurrency: 30});
 
-			},{concurency: 5});
+			},{concurency: 8});
 
 		}).then(function(testedLinks) {
 			
@@ -167,26 +172,25 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 				return tlink.repost.length > 0
 			});
 			console.log("found " + filteredLinks.length + " reposts");
-			
-			/*for(var l of filteredLinks){
-				console.log({name: l.name, repost: l.repost})
-			}*/
 
-			// now we can report/comment
+			return filteredLinks;
 
-			this.info.update({"typ":"info"}, {$set:{"before": this.links[0].name}});
-
-			return Promise.each(filteredLinks, function(link) {
-				console.log(link.name + "=>" + link.repost[0].name);
-				let l = jawfr.asLink(link);
-				return l.report("repost /r/facepalm/comments/" + l.repost[0].name.slice(3));
-			});
+		}).each(function(link) {
+			console.log(link.name + "=>" + link.repost[0].name);
+			this.dblinks.update({"name": link.name}, {$set:{"repost": link.repost}});
+			let l = jawfr.asLink(link);
+			l.report("probably a repost, check my comment for a link");
+			return l.reply("my bot thinks this is a repost of /r/facepalm/comments/" + link.repost[0].name.slice(3)+" with a dissimilarity of " + link.repost[0].res.nfirst[2] + "from " + link.repost[0].res.nfirst[3] + " points. It might also be a repost of " + (link.repost.length - 1) + " other post(s)" );
 		}).catch(function(err) {
 			console.log(err);
 		}).then(function(){
+
+			// we're all done with this set of links; start on the next set
+			if(this.links && this.links.length>0)
+				this.info.update({"typ":"info"}, {$set:{"before": this.links[0].name}});
 			
 			if(this.links.length > 40) {
-				setTimeout(loop.bind(this), 100);
+				setTimeout(loop.bind(this), 1);
 			} else {
 				setTimeout(loop.bind(this), 60000);
 			}
@@ -197,7 +201,6 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 	console.log("uncaught error");
 	console.log(err);
 })
-
 
 function parseMatrix(ser) {
 	var mat = new cv.Matrix(ser.height, ser.width, cv.Constants.CV_8UC1);

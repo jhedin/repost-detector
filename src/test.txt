@@ -1,77 +1,377 @@
-
-t3_3xmxfa=>t3_3xi502
-t3_3xvco8=>t3_3xi41x
-t3_3xvb9r=>t3_3xr3jc
-t3_3xu2pi=>t3_3xmxfa
-t3_3xsd7p=>t3_3xfa52
-t3_3y95ne=>t3_3xm1nj
-t3_3y85mz=>t3_3xdhif
-t3_3y7a4s=>t3_3y37ay
-t3_3y51jb=>t3_3xz9nu
-t3_3y4ieh=>t3_3xfa52
-t3_3y3f7h=>t3_3xqvo9
-t3_3y2ygb=>t3_3xwwn9
-t3_3y1v5p=>t3_3xj9rm
-t3_3y0ypw=>t3_3xdlgf
-t3_3y0rq5=>t3_3xr3jc
-t3_3xzmwn=>t3_3xr3jc
-t3_3xzgho=>t3_3xjmtb
-t3_3xz9nu=>t3_3xqnoo
-t3_3yj9hy=>t3_3y2ygb
-t3_3yh3lc=>t3_3xdlgf
-t3_3yfovm=>t3_3xygfu
-t3_3yfjn4=>t3_3xm1nj
-t3_3yf921=>t3_3xj9rm
-t3_3ydlfz=>t3_3xi502
-t3_3yd4kq=>t3_3y4ieh
-t3_3yct8x=>t3_3xj9rm
-t3_3yccxg=>t3_3xmxfa
-t3_3yb1ly=>t3_3xmxfa
-t3_3ytyax=>t3_3xv762
-t3_3yti98=>t3_3xv762
-t3_3ysxk1=>t3_3xiup7
-t3_3yq5uq=>t3_3xcc4q
-t3_3yppej=>t3_3xh2k6
-t3_3ypk8e=>t3_3xl95n
-t3_3yoljv=>t3_3xr3jc
-t3_3ymh8r=>t3_3xfa52
-t3_3yl68h=>t3_3y53hh
-t3_3yk8my=>t3_3y31fn
-t3_3yk53l=>t3_3y53hh
-t3_3z1io3=>t3_3xfqeh
-t3_3z0hb1=>t3_3xsp9f
-t3_3yzgnp=>t3_3xse93
-t3_3yy7to=>t3_3xi41x
-t3_3yxcbx=>t3_3yct8x
-t3_3yx97m=>t3_3xxbe1
-t3_3yuv0t=>t3_3xtbh2
-t3_3yuubl=>t3_3xiup7
-t3_3zc08a=>t3_3y51jb
-t3_3zb1uc=>t3_3yb1ly
-t3_3zala3=>t3_3xjbm1
-t3_3zah9r=>t3_3xv762
-t3_3z7h2x=>t3_3xi502
-t3_3z5ys9=>t3_3ysh0j
-t3_3z55gs=>t3_3y2lqb
-t3_3z49iz=>t3_3xjmtb
-t3_3z3xb5=>t3_3xm1nj
-t3_3z21db=>t3_3yxcbx
-t3_3zoa1h=>t3_3y7a4s
-t3_3znes3=>t3_3xhzef
-t3_3zm89f=>t3_3y6ged
-t3_3zlo8f=>t3_3xcc4q
-t3_3ziqjd=>t3_3xqnoo
-t3_3ziasy=>t3_3xmxfa
-t3_3zhwov=>t3_3y6ged
-t3_3zhw9z=>t3_3yl8dq
-t3_3zg34d=>t3_3z4k3d
-t3_3ze3g9=>t3_3yghrd
-t3_400wvy=>t3_3xmxfa
-t3_400pqy=>t3_3y7a4s
-t3_3zziwy=>t3_3zxet8
-t3_3zyf0e=>t3_3yqutf
-t3_3zy8s6=>t3_3ygv0t
-t3_3zxet8=>t3_3zvu4z
-t3_3zw6xw=>t3_3xi502
-t3_3zqnxm=>t3_3xv762
-
+looking before t3_427d5f
+25 new links
+found 6 reposts
+t3_42wfj8=>t3_42wfb3
+Link {
+  '0': 't',
+  '1': '3',
+  '2': '_',
+  '3': '4',
+  '4': '2',
+  '5': 'w',
+  '6': 'f',
+  '7': 'j',
+  '8': '8',
+  subreddit: Subreddit { name: undefined },
+  author: User { name: undefined } }
+{ [StatusCodeError: 403 - [object Object]]
+  name: 'StatusCodeError',
+  statusCode: 403,
+  message: '403 - [object Object]',
+  error: { error: 403 },
+  options: 
+   { method: 'POST',
+     uri: 'https://oauth.reddit.com/api/comment',
+     qs: { raw_json: 1 },
+     form: 
+      { thing_id: undefined,
+        text: 'my bot thinks this is a repost of /r/facepalm/comments/42wfb3 with a dissimilarity of undefinedfrom undefined points. It might also be a repost of 0 other post(s)',
+        api_type: 'json' },
+     headers: 
+      { Authorization: 'bearer 8500472-r3UkeDAq26yQCKyxTxvJ-ax4CA4',
+        'User-Agent': 'repost-detector:v1.0.0 (by /u/eightnote)' },
+     transform: [Function: bound ],
+     json: true,
+     callback: undefined,
+     simple: true,
+     resolveWithFullResponse: false },
+  response: 
+   IncomingMessage {
+     _readableState: 
+      ReadableState {
+        objectMode: false,
+        highWaterMark: 16384,
+        buffer: [],
+        length: 0,
+        pipes: null,
+        pipesCount: 0,
+        flowing: true,
+        ended: true,
+        endEmitted: true,
+        reading: false,
+        sync: true,
+        needReadable: false,
+        emittedReadable: false,
+        readableListening: false,
+        resumeScheduled: false,
+        defaultEncoding: 'utf8',
+        ranOut: false,
+        awaitDrain: 0,
+        readingMore: false,
+        decoder: null,
+        encoding: null },
+     readable: false,
+     domain: null,
+     _events: 
+      { end: [Object],
+        close: [Object],
+        data: [Function],
+        error: [Function] },
+     _eventsCount: 4,
+     _maxListeners: undefined,
+     socket: 
+      TLSSocket {
+        _tlsOptions: [Object],
+        _secureEstablished: true,
+        _securePending: false,
+        _newSessionPending: false,
+        _controlReleased: true,
+        _SNICallback: null,
+        servername: null,
+        npnProtocol: false,
+        alpnProtocol: false,
+        authorized: true,
+        authorizationError: null,
+        encrypted: true,
+        _events: [Object],
+        _eventsCount: 9,
+        _connecting: false,
+        _hadError: false,
+        _handle: null,
+        _parent: null,
+        _host: 'oauth.reddit.com',
+        _readableState: [Object],
+        readable: false,
+        domain: null,
+        _maxListeners: 0,
+        _writableState: [Object],
+        writable: false,
+        allowHalfOpen: false,
+        destroyed: true,
+        bytesRead: 768,
+        _bytesDispatched: 536,
+        _sockname: null,
+        _pendingData: null,
+        _pendingEncoding: '',
+        ssl: [Object],
+        server: undefined,
+        _requestCert: true,
+        _rejectUnauthorized: true,
+        parser: null,
+        _httpMessage: [Object],
+        read: [Function],
+        _consuming: true,
+        _idleNext: null,
+        _idlePrev: null,
+        _idleTimeout: -1 },
+     connection: 
+      TLSSocket {
+        _tlsOptions: [Object],
+        _secureEstablished: true,
+        _securePending: false,
+        _newSessionPending: false,
+        _controlReleased: true,
+        _SNICallback: null,
+        servername: null,
+        npnProtocol: false,
+        alpnProtocol: false,
+        authorized: true,
+        authorizationError: null,
+        encrypted: true,
+        _events: [Object],
+        _eventsCount: 9,
+        _connecting: false,
+        _hadError: false,
+        _handle: null,
+        _parent: null,
+        _host: 'oauth.reddit.com',
+        _readableState: [Object],
+        readable: false,
+        domain: null,
+        _maxListeners: 0,
+        _writableState: [Object],
+        writable: false,
+        allowHalfOpen: false,
+        destroyed: true,
+        bytesRead: 768,
+        _bytesDispatched: 536,
+        _sockname: null,
+        _pendingData: null,
+        _pendingEncoding: '',
+        ssl: [Object],
+        server: undefined,
+        _requestCert: true,
+        _rejectUnauthorized: true,
+        parser: null,
+        _httpMessage: [Object],
+        read: [Function],
+        _consuming: true,
+        _idleNext: null,
+        _idlePrev: null,
+        _idleTimeout: -1 },
+     httpVersionMajor: 1,
+     httpVersionMinor: 1,
+     httpVersion: '1.1',
+     complete: true,
+     headers: 
+      { server: 'cloudflare-nginx',
+        date: 'Sat, 30 Jan 2016 09:44:05 GMT',
+        'content-type': 'application/json; charset=UTF-8',
+        'content-length': '14',
+        connection: 'close',
+        'set-cookie': [Object],
+        'x-ua-compatible': 'IE=edge',
+        'x-frame-options': 'SAMEORIGIN',
+        'x-content-type-options': 'nosniff',
+        'x-xss-protection': '1; mode=block',
+        expires: '-1',
+        'cache-control': 'private, s-maxage=0, max-age=0, must-revalidate, max-age=0, must-revalidate',
+        'x-ratelimit-remaining': '593.0',
+        'x-ratelimit-used': '7',
+        'x-ratelimit-reset': '355',
+        'x-moose': 'majestic',
+        'strict-transport-security': 'max-age=15552000; includeSubDomains; preload',
+        'cf-ray': '26cc3c7554dc3afc-YVR' },
+     rawHeaders: 
+      [ 'Server',
+        'cloudflare-nginx',
+        'Date',
+        'Sat, 30 Jan 2016 09:44:05 GMT',
+        'Content-Type',
+        'application/json; charset=UTF-8',
+        'Content-Length',
+        '14',
+        'Connection',
+        'close',
+        'Set-Cookie',
+        '__cfduid=d3f720080fd9415d1f1407916ec03c0a31454147044; expires=Sun, 29-Jan-17 09:44:04 GMT; path=/; domain=.reddit.com; HttpOnly',
+        'x-ua-compatible',
+        'IE=edge',
+        'x-frame-options',
+        'SAMEORIGIN',
+        'x-content-type-options',
+        'nosniff',
+        'x-xss-protection',
+        '1; mode=block',
+        'expires',
+        '-1',
+        'cache-control',
+        'private, s-maxage=0, max-age=0, must-revalidate',
+        'x-ratelimit-remaining',
+        '593.0',
+        'x-ratelimit-used',
+        '7',
+        'x-ratelimit-reset',
+        '355',
+        'cache-control',
+        'max-age=0, must-revalidate',
+        'X-Moose',
+        'majestic',
+        'Strict-Transport-Security',
+        'max-age=15552000; includeSubDomains; preload',
+        'CF-RAY',
+        '26cc3c7554dc3afc-YVR' ],
+     trailers: {},
+     rawTrailers: [],
+     upgrade: false,
+     url: '',
+     method: null,
+     statusCode: 403,
+     statusMessage: 'Forbidden',
+     client: 
+      TLSSocket {
+        _tlsOptions: [Object],
+        _secureEstablished: true,
+        _securePending: false,
+        _newSessionPending: false,
+        _controlReleased: true,
+        _SNICallback: null,
+        servername: null,
+        npnProtocol: false,
+        alpnProtocol: false,
+        authorized: true,
+        authorizationError: null,
+        encrypted: true,
+        _events: [Object],
+        _eventsCount: 9,
+        _connecting: false,
+        _hadError: false,
+        _handle: null,
+        _parent: null,
+        _host: 'oauth.reddit.com',
+        _readableState: [Object],
+        readable: false,
+        domain: null,
+        _maxListeners: 0,
+        _writableState: [Object],
+        writable: false,
+        allowHalfOpen: false,
+        destroyed: true,
+        bytesRead: 768,
+        _bytesDispatched: 536,
+        _sockname: null,
+        _pendingData: null,
+        _pendingEncoding: '',
+        ssl: [Object],
+        server: undefined,
+        _requestCert: true,
+        _rejectUnauthorized: true,
+        parser: null,
+        _httpMessage: [Object],
+        read: [Function],
+        _consuming: true,
+        _idleNext: null,
+        _idlePrev: null,
+        _idleTimeout: -1 },
+     _consuming: true,
+     _dumped: false,
+     req: 
+      ClientRequest {
+        domain: null,
+        _events: [Object],
+        _eventsCount: 4,
+        _maxListeners: undefined,
+        output: [],
+        outputEncodings: [],
+        outputCallbacks: [],
+        outputSize: 0,
+        writable: true,
+        _last: true,
+        chunkedEncoding: false,
+        shouldKeepAlive: false,
+        useChunkedEncodingByDefault: true,
+        sendDate: false,
+        _removedHeader: [Object],
+        _contentLength: null,
+        _hasBody: true,
+        _trailer: '',
+        finished: true,
+        _headerSent: true,
+        socket: [Object],
+        connection: [Object],
+        _header: 'POST /api/comment?raw_json=1 HTTP/1.1\r\nAuthorization: bearer 8500472-r3UkeDAq26yQCKyxTxvJ-ax4CA4\r\nUser-Agent: repost-detector:v1.0.0 (by /u/eightnote)\r\nhost: oauth.reddit.com\r\ncontent-type: application/x-www-form-urlencoded\r\naccept: application/json\r\ncontent-length: 243\r\nConnection: close\r\n\r\n',
+        _headers: [Object],
+        _headerNames: [Object],
+        _onPendingData: null,
+        agent: [Object],
+        socketPath: undefined,
+        method: 'POST',
+        path: '/api/comment?raw_json=1',
+        parser: null,
+        res: [Circular] },
+     request: 
+      Request {
+        domain: null,
+        _events: [Object],
+        _eventsCount: 5,
+        _maxListeners: undefined,
+        method: 'POST',
+        uri: [Object],
+        headers: [Object],
+        transform: [Function: bound ],
+        readable: true,
+        writable: true,
+        explicitMethod: true,
+        _qs: [Object],
+        _auth: [Object],
+        _oauth: [Object],
+        _multipart: [Object],
+        _redirect: [Object],
+        _tunnel: [Object],
+        _rp_resolve: [Function],
+        _rp_reject: [Function],
+        _rp_promise: [Object],
+        _rp_callbackOrig: undefined,
+        callback: [Function],
+        _rp_options: [Object],
+        setHeader: [Function],
+        hasHeader: [Function],
+        getHeader: [Function],
+        removeHeader: [Function],
+        localAddress: undefined,
+        pool: {},
+        dests: [],
+        __isRequestRequest: true,
+        _callback: [Function: RP$callback],
+        proxy: null,
+        tunnel: true,
+        setHost: true,
+        originalCookieHeader: undefined,
+        _disableCookies: true,
+        _jar: undefined,
+        port: 443,
+        host: 'oauth.reddit.com',
+        body: 'text=my%20bot%20thinks%20this%20is%20a%20repost%20of%20%2Fr%2Ffacepalm%2Fcomments%2F42wfb3%20with%20a%20dissimilarity%20of%20undefinedfrom%20undefined%20points.%20It%20might%20also%20be%20a%20repost%20of%200%20other%20post%28s%29&api_type=json',
+        url: [Object],
+        path: '/api/comment?raw_json=1',
+        _json: true,
+        httpModule: [Object],
+        agentClass: [Object],
+        agent: [Object],
+        _started: true,
+        href: 'https://oauth.reddit.com/api/comment?raw_json=1',
+        req: [Object],
+        ntick: true,
+        response: [Circular],
+        originalHost: 'oauth.reddit.com',
+        originalHostHeaderName: 'host',
+        responseContent: [Circular],
+        _destdata: true,
+        _ended: true,
+        _callbackCalled: true },
+     toJSON: [Function: responseToJSON],
+     caseless: Caseless { dict: [Object] },
+     read: [Function],
+     body: { error: 403 } } }
+looking before t3_42wfyb
+no new links
