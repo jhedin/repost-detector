@@ -8,6 +8,7 @@ var jawfr = require('jawfr')();
 var cv = require('opencv');
 var request = require("request");
 var fs = require("fs");
+var matches = require("./matches.json");
 
 var mongodb = require('mongodb');
 
@@ -22,6 +23,7 @@ Promise.promisifyAll(mongodb.Cursor.prototype);
 var readImageAsync = Promise.promisify(cv.readImage);
 var detectAndComputeAsync = Promise.promisify(cv.DetectAndCompute);
 var filteredMatchAsync = Promise.promisify(cv.FilteredMatch, {multiArgs: true});
+var maskTextAsync = Promise.promisify(cv.MaskText);
 
 var url = 'mongodb://localhost:27017/facepalm';
 
@@ -36,41 +38,47 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 .then(function (db) {
 	this.fp = jawfr.getSubreddit('facepalm');
 	this.info = db.collection("info");
-	this.dblinks = db.collection("links");  
-	return this.dblinks.findOne({"name": "t3_3ytyax"});
-}).then(function (l1) {
-	this.l1 = l1;
-	return this.dblinks.findOne({"name": "t3_3xv762"});
-}).then(function (l2){
+	this.dblinks = db.collection("links");
 
-	this.l2 = l2;
+	return matches;
+}).each(function(match) {
 
-	this.l1.features.descriptors = parseMatrix(this.l1.features.descriptors);
-	this.l2.features.descriptors = parseMatrix(this.l2.features.descriptors);
+	this.dblinks.findOneAsync({"name": match[0]}).bind({match:match, dblinks:this.dblinks}).then(function (l1) {
+		this.l1 = l1;
+		return this.dblinks.findOne({"name": this.match[1]});
+	}).then(function (l2){
 
-	return filteredMatchAsync(this.l1.features, this.l2.features);
-				
+		this.l2 = l2;
 
-}).then(function(res){
-	let d_good = res[0];
-	let n_good = res[1];
-	let d_h = res[2];
-	let n_h = res[3];
+		this.l1.features.descriptors = parseMatrix(this.l1.features.descriptors);
+		this.l2.features.descriptors = parseMatrix(this.l2.features.descriptors);
 
-	console.log(res, (d_h < 30 && n_h > 12), (d_h < 18 && n_h > 5));
+		return filteredMatchAsync(this.l1.features, this.l2.features);
+					
+	}).then(function(res){
+		let d_good = res[0];
+		let n_good = res[1];
+		let d_h = res[2];
+		let n_h = res[3];
+		let c = res[4];
 
-	return filteredMatchAsync(this.l2.features, this.l1.features);
-				
+		console.log(this.match, res, (d_h < 30 && n_h > 12), (d_h < 20 && n_h > 6), (d_h < 12 && n_h > 3), c > 0.0000001,"|", ((d_h < 30 && n_h > 12) || (d_h < 20 && n_h > 6) || (d_h < 12 && n_h > 3)) && c > 0.0000001);
 
-}).then(function(res){
-	let d_good = res[0];
-	let n_good = res[1];
-	let d_h = res[2];
-	let n_h = res[3];
+		return filteredMatchAsync(this.l2.features, this.l1.features);
+					
 
-	console.log(res, (d_h < 30 && n_h > 12), (d_h < 18 && n_h > 5));
+	}).then(function(res){
+		let d_good = res[0];
+		let n_good = res[1];
+		let d_h = res[2];
+		let n_h = res[3];
+		let c = res[4];
+
+		var rev = this.match.reverse();
+
+		console.log(this.match, res, (d_h < 30 && n_h > 12), (d_h < 20 && n_h > 6), (d_h < 12 && n_h > 3), c > 0.0000001,"|", ((d_h < 30 && n_h > 12) || (d_h < 20 && n_h > 6) || (d_h < 12 && n_h > 3)) && c > 0.0000001);
+	})
 })
-
 
 
 function parseMatrix(ser) {

@@ -24,7 +24,6 @@ var maskTextAsync = Promise.promisify(cv.MaskText);
 
 var url = 'mongodb://localhost:27017/facepalm';
 
-
 // connect to all
 jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({})
 .then(function() {
@@ -71,15 +70,21 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 				}).then(function(){
 					return readImageAsync("./" + link.name + ".jpg");
 
+				// saving the masked image has an effect on the feature finder (probably due to some compresion?) 
+				// so, for ease of checking, use the saved/opened version, rather than the immediately computed one
 				}).then(function(image){
 					return maskTextAsync(image);
-				
-				}).then(function(image){
+				}).then(function(masked){
+					masked.save("./" + link.name + "_masked.jpg");
+				}).then(function(){
+					return readImageAsync("./" + link.name + "_masked.jpg");
+				}).then(function(maskedSaved){
 					// clean up the download
 					fs.unlinkSync("./" + link.name + ".jpg");
+					fs.unlinkSync("./" + link.name + "_masked.jpg");
 
 					return Promise.props({
-						features: detectAndComputeAsync(image),
+						features: detectAndComputeAsync(maskedSaved),
 						name: link.name,
 						author: link.author,
 						created_utc: link.created_utc,
@@ -95,7 +100,7 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 			// reddit can't analyse every post to fiind an image; if there's no preview,
 			// we cant check if its a repost
 			// todo: try to find an image for no preview situations
-			// removed posts also havve no previews
+			// removed posts also have no previews
 			this.docs = docs.filter(function(doc){
 				if(doc.nopreview || doc.features.keypoints.length == 0) 
 					return false;
@@ -144,16 +149,14 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 						})
 						.then(function(res){
 
-							var d_good = res.nfirst[0];
-							var n_good = res.nfirst[1];
-							var d_h = res.nfirst[2];
-							var n_h = res.nfirst[3];
-							if((d_h < 35 && n_h > 12) || (d_h < 20 && n_h > 6) || (d_h < 12 && n_h > 3)) {
-								d_good = res.sfirst[0];
-								n_good = res.sfirst[1];
-								d_h = res.sfirst[2];
-								n_h = res.sfirst[3];
-								if((d_h < 35 && n_h > 12) || (d_h < 20 && n_h > 6) || (d_h < 12 && n_h > 3)) {
+							var nd_h = res.nfirst[2];
+							var nn_h = res.nfirst[3];
+							var nc = res.nfirst[4];
+							var sd_h = res.sfirst[2];
+							var sn_h = res.sfirst[3];
+							var sc = res.sfirst[4];
+							if(((nd_h < 35 && nn_h > 12) || (nd_h < 20 && nn_h > 6) || (nd_h < 12 && nn_h > 3)) && nc > 0.0000001) {	
+								if(((sd_h < 35 && sn_h > 12) || (sd_h < 20 && sn_h > 6) || (sd_h < 12 && sn_h > 3)) && sc > 0.0000001) {
 									nlink.repost.push({
 										name: slink.name, 
 										res: res

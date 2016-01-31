@@ -9,6 +9,22 @@
 ["t3_411uh3","t3_3yqutf"],
 ["t3_411q3p","t3_3y51jb"]]*/
 
+/*
+[["t3_3zl0v","t3_3z52pt"],
+["t3_3zhwo","t3_3ysxk1"],
+["t3_3zc5f","t3_3yqutf"],
+["t3_3zxjy","t3_3ziqjd"],
+["t3_3zxet","t3_3zvu4z"],
+["t3_3znvg","t3_3zb1uc"],
+["t3_40b0y","t3_3z49iz"],
+["t3_40af0","t3_3z3xb5"],
+["t3_40a11","t3_3znes3"],
+["t3_406h9","t3_3z3xb5"],
+["t3_4057m","t3_3z6i2r"],
+["t3_403nd","t3_3yif7h"],
+["t3_400wv","t3_3ze3g9"]]
+*/
+
 // matches, testbed
 /*[["t3_42wfj8","t3_42wfb3"],
 ["t3_428r2i","t3_427hgq"],
@@ -92,8 +108,9 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 			let n_good = res[2];
 			let d_h = res[3];
 			let n_h = res[4];
+			let c = res[5];
 
-			console.log(this.match, res.slice(1), (d_h < 30 && n_h > 12), (d_h < 20 && n_h > 6), (d_h < 12 && n_h > 3), "|", (d_h < 30 && n_h > 12) || (d_h < 20 && n_h > 6) || (d_h < 12 && n_h > 3));
+			console.log(this.match, res.slice(1), (d_h < 30 && n_h > 12), (d_h < 20 && n_h > 6), (d_h < 12 && n_h > 3), c > 0.0000001,"|", ((d_h < 30 && n_h > 12) || (d_h < 20 && n_h > 6) || (d_h < 12 && n_h > 3)) && c>0.0000001);
 			res[0].save("./" + this.match[0] + "_" + this.match[1] + ".jpg");
 			return similarityAsync(this.i2,this.i1);
 		}).then(function(res){
@@ -101,12 +118,13 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 			let n_good = res[2];
 			let d_h = res[3];
 			let n_h = res[4];
+			let c = res[5];
 
 			var rev = this.match.reverse();
 
 			res[0].save("./" + rev[0] + "_" + rev[1] + ".jpg");
 
-			console.log(rev, res.slice(1), (d_h < 30 && n_h > 12), (d_h < 20 && n_h > 6), (d_h < 12 && n_h > 3), "|", (d_h < 30 && n_h > 12) || (d_h < 20 && n_h > 6) || (d_h < 12 && n_h > 3));
+			console.log(rev, res.slice(1), (d_h < 30 && n_h > 12), (d_h < 20 && n_h > 6), (d_h < 12 && n_h > 3), c > 0.0000001, "|", ((d_h < 30 && n_h > 12) || (d_h < 20 && n_h > 6) || (d_h < 12 && n_h > 3)) && c>0.0000001);
 		});
 	}, {concurrency: 10})
 
