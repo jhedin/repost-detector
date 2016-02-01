@@ -11,7 +11,7 @@ Promise.promisifyAll(mongodb.Cursor.prototype);
 
 var duplicates = [];
 
-var url = 'mongodb://localhost:27017/facepalmtestbed';
+var url = 'mongodb://localhost:27017/facepalm';
 
 MongoClient.connectAsync(url).then(function(db) {
 
