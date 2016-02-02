@@ -47,7 +47,7 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 		this.names.push(arr[0]);
 		this.names.push(arr[1]);
 	}
-	uniq(this.names);
+	this.names = uniq(this.names);
 
 	return jawfr.getLinks(this.names);
 
@@ -60,8 +60,13 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 			console.log(link);
 			return {nopreview:true};
 		}
+		// choose a reasonably sized image
+		var loc = link.preview.images[0].source.url;
 
-	  	var stream = request(link.preview.images[0].source.url).pipe(fs.createWriteStream("./" + link.name + ".jpg"));
+		if(link.preview.images[0].source.width * link.preview.images[0].source.height > 2000000 )
+			loc = link.preview.images[0].resolutions[link.preview.images[0].resolutions.length - 1].url;
+
+	  	var stream = request(loc).pipe(fs.createWriteStream("./" + link.name + ".jpg"));
 	 	return new Promise(function(resolve,reject){
 	    	stream.on("finish", function(){
 	         	resolve();
@@ -109,6 +114,8 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 		return Promise.props({
 			single: similarityAsync(this.i1,this.i2),
 			msingle: similarityAsync(this.mi1,this.mi2),
+			hsingle: similarityAsync(this.i1,this.mi2),
+			tsingle: similarityAsync(this.table[match[0]],this.table[match[1]]),
 			multipart: Promise.map([this.mi1, this.mi2], function(image) { 
 				return detectAndComputeAsync(image);
 			}).bind(this)
@@ -149,6 +156,10 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 		res.single[0].save("./" + this.match[0] + "_" + this.match[1] + ".jpg");
 		console.log(res.msingle.slice(1));
 		res.msingle[0].save("./" + this.match[0] + "_" + this.match[1] + "_masked.jpg");
+		console.log(res.hsingle.slice(1));
+		res.hsingle[0].save("./" + this.match[0] + "_" + this.match[1] + "_half.jpg");
+		console.log(res.tsingle.slice(1));
+		res.tsingle[0].save("./" + this.match[0] + "_" + this.match[1] + "_table.jpg");
 		console.log(res.multipart);
 	}).catch(function(err){
 		console.log(err)

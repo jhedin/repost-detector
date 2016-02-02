@@ -6,6 +6,7 @@ var jawfr = require('jawfr')();
 var cv = require('opencv');
 var request = require("request");
 var fs = require("fs");
+var imgur = Promise.promisifyAll(require('imgur-upload'));
 
 var mongodb = require('mongodb');
 
@@ -21,8 +22,10 @@ var readImageAsync = Promise.promisify(cv.readImage);
 var detectAndComputeAsync = Promise.promisify(cv.DetectAndCompute);
 var filteredMatchAsync = Promise.promisify(cv.FilteredMatch, {multiArgs: true});
 var maskTextAsync = Promise.promisify(cv.MaskText);
+var similarityAsync = Promise.promisify(cv.ImageSimilarity, {multiArgs: true});
 
-var url = 'mongodb://localhost:27017/facepalm';
+var url = 'mongodb://localhost:27017/facepalmtestbed';
+imgur.setClientID(login.imgur_client);
 
 // connect to all
 jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({})
@@ -33,7 +36,7 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 	console.log(err);
 })
 .then(function(db) {
-	this.fp = jawfr.getSubreddit('facepalm');
+	this.fp = jawfr.getSubreddit('facepalmtestbed');
 	this.info = db.collection("info");
 	this.dblinks = db.collection("links");
 	
@@ -93,9 +96,6 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 				}).then(function(){
 					return readImageAsync("./" + link.name + "_masked.jpg");
 				}).then(function(maskedSaved){
-					// clean up the download
-					fs.unlinkSync("./" + link.name + ".jpg");
-					fs.unlinkSync("./" + link.name + "_masked.jpg");
 
 					return Promise.props({
 						features: detectAndComputeAsync(maskedSaved),
@@ -128,6 +128,8 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 			});
 
 			console.log(this.docs.length + " new links");
+
+			this.docsList = this.docs;
 			
 			return this.dblinks.insertManyAsync(this.docs)
 
@@ -163,43 +165,45 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 						if(nlink.features.descriptors.width() != slink.features.descriptors.width() || nlink.features_text.descriptors.width() != slink.features_text.descriptors.width())
 							return;
 
-						// this is an inefficient way of checking the condition of the homography matrix
+						// the condition is insufficient to test the homography, still need to check both diections to see that it makes sense
 						return Promise.props({
 							nfirst: filteredMatchAsync(nlink.features, slink.features),
-							//sfirst: filteredMatchAsync(slink.features, nlink.features),
-							nfirst_text: filteredMatchAsync(nlink.features_text, slink.features_text)
-							//sfirst_text: filteredMatchAsync(slink.features_text, nlink.features_text)
+							sfirst: filteredMatchAsync(slink.features, nlink.features),
+							nfirst_text: filteredMatchAsync(nlink.features_text, slink.features_text),
+							sfirst_text: filteredMatchAsync(slink.features_text, nlink.features_text)
 						})
 						.then(function(res){
 
 							var nd_h = res.nfirst[2];
 							var nn_h = res.nfirst[3];
 							var nc = res.nfirst[4];
-							//var sd_h = res.sfirst[2];
-							//var sn_h = res.sfirst[3];
-							//var sc = res.sfirst[4];
+							var sd_h = res.sfirst[2];
+							var sn_h = res.sfirst[3];
+							var sc = res.sfirst[4];
 							if(((nd_h < 35 && nn_h > 12) || (nd_h < 20 && nn_h > 6) || (nd_h < 12 && nn_h > 3)) && nc > 0.000001) {	
-								//if(((sd_h < 35 && sn_h > 12) || (sd_h < 20 && sn_h > 6) || (sd_h < 12 && sn_h > 3)) && sc > 0.0000001) {
+								if(((sd_h < 35 && sn_h > 12) || (sd_h < 20 && sn_h > 6) || (sd_h < 12 && sn_h > 3)) && sc > 0.000001) {
 									nlink.repost.push({
 										name: slink.name, 
-										res: res
+										res: res,
+										dnr: Math.min(nd_h / nn_h, sd_h / sn_h)
 									});
-								//}
+								}
 							} else {
 								nd_h = res.nfirst_text[2];
 								nn_h = res.nfirst_text[3];
 								nc = res.nfirst_text[4];
-								//sd_h = res.sfirst_text[2];
-								//sn_h = res.sfirst_text[3];
-								//sc = res.sfirst_text[4];
+								sd_h = res.sfirst_text[2];
+								sn_h = res.sfirst_text[3];
+								sc = res.sfirst_text[4];
 								if(((nd_h < 45 && nn_h > 20) ||(nd_h < 35 && nn_h > 12) || (nd_h < 20 && nn_h > 6)) && nc > 0.000001) {	
-									//if(((sd_h < 35 && sn_h > 12) || (sd_h < 20 && sn_h > 6) || (sd_h < 12 && sn_h > 3)) && sc > 0.0000001) {
+									if(((sd_h < 45 && sn_h > 20) || (sd_h < 35 && sn_h > 12) || (sd_h < 20 && sn_h > 6)) && sc > 0.000001) {
 										nlink.repost.push({
 											name: slink.name, 
 											res: res,
+											dnr: Math.min(nd_h / nn_h, sd_h / sn_h),
 											text: true
 										});
-									//}
+									}
 								}
 							}
 						}).catch(function(err){console.log("error while matching",err)});
@@ -218,18 +222,55 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 			return filteredLinks;
 
 		}).each(function(link) {
-			console.log(link.name + "=>" + link.repost[0].name);
+			
+			var best = link.repost[0];
+			for(var r of link.repost) {
+				if(r.dnr < best.dnr) {
+					best = r;
+				}
+			}
+
+			console.log(link.name + "=>" + best.name);
 			this.dblinks.update({"name": link.name}, {$set:{"repost": link.repost}});
-			let l = jawfr.asLink(link);
-			l.report("probably a repost, check my comment for a link");
-			return l.reply("my bot thinks this is a repost of /r/facepalm/comments/" + link.repost[0].name.slice(3) + " with " + link.repost[0].res.nfirst.toString() + ", " + link.repost[0].res.nfirst_text.toString()  + " there are " + (link.repost.length - 1) + " other posts it might match");
+
+			var suffix = "_masked.jpg";
+			if(best.text) {
+				suffix = ".jpg"
+			}
+
+			return readImageAsync("./" + best.name + suffix).bind({best:best, suffix:suffix})
+			.then(function(i1) {
+				this.i1 = i1;
+				return readImageAsync("./" + link.name + this.suffix)
+			}).then(function(i2){
+				this.i2 = i2;
+				return similarityAsync(this.i1,this.i2);
+			}).then(function(res){
+				return res[0].save("./"+ link.name+".jpg");
+			}).then(function(){
+				return imgur.uploadAsync("./"+ link.name+".jpg");
+			}).then(function(im_link) {
+				console.log(im_link.data.link);
+
+				let l = jawfr.asLink(link);
+				//l.report("probably a repost, check my comment for a link");
+				return l.reply("my bot thinks this is a repost of /r/facepalm/comments/" + this.best.name.slice(3) + " with: \n\n" + this.best.res.nfirst.toString() + "\n\n" + this.best.res.sfirst.toString() + "\n\n" + this.best.res.nfirst_text.toString() + "\n\n" + this.best.res.sfirst_text.toString() + "\n\nthere are " + (link.repost.length - 1) + " other posts it might match.\n\n [Matched points](" + im_link.data.link +")");
+			});
+
 		}).catch(function(err) {
 			console.log(err);
 		}).then(function(){
 
 			// we're all done with this set of links; start on the next set
-			if(this.links && this.links.length>0)
+			if(this.links && this.links.length>0) {
 				this.info.update({"typ":"info"}, {$set:{"before": this.links[0].name}});
+				
+				for(var link of this.docsList) {
+					// clean up the download
+					fs.unlinkSync("./" + link.name + ".jpg");
+					fs.unlinkSync("./" + link.name + "_masked.jpg");
+				}
+			}
 			
 			if(this.links.length > 40) {
 				setTimeout(loop.bind(this), 1);

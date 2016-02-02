@@ -4,6 +4,7 @@
   "description": "Compares images with ORB, using FLANN and homography checks",
   "main": "src/index.js",
   "dependencies": {
+    "imgur-upload": "^0.1.2",
     "jawfr": "^0.1.0",
     "mongodb": "^2.1.4"
   },
