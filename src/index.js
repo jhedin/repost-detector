@@ -24,7 +24,9 @@ var filteredMatchAsync = Promise.promisify(cv.FilteredMatch, {multiArgs: true});
 var maskTextAsync = Promise.promisify(cv.MaskText);
 var similarityAsync = Promise.promisify(cv.ImageSimilarity, {multiArgs: true});
 
-var url = 'mongodb://localhost:27017/facepalmtestbed';
+var subreddit = 'facepalm'
+
+var url = 'mongodb://localhost:27017/' + subreddit;
 imgur.setClientID(login.imgur_client);
 
 // connect to all
@@ -36,25 +38,35 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 	console.log(err);
 })
 .then(function(db) {
-	this.fp = jawfr.getSubreddit('facepalmtestbed');
+	this.fp = jawfr.getSubreddit(subreddit);
 	this.info = db.collection("info");
 	this.dblinks = db.collection("links");
+	this.lastChecked = "";
 	
 	// get a list of new links to analyse
 	var loop = function loop () {
 		
 		this.info.findOneAsync({"typ":"info"}).bind(this)
 		.then(function(doc){
-			console.log("looking before " + doc.before);
+
+			if(doc.before != this.lastChecked) {
+				console.log("looking before " + doc.before);
+				this.lastChecked = doc.before;
+			}
+
 			return this.fp.getLinks({before: doc.before});
 
 		}).then(function(links){
-
+			var found = false;
 			for(var i = 0; i < links.length; i++){
 				if(links[i].preview) {
 					links.slice(i);
+					found = true;
 					break;
 				}
+			}
+			if(!found){
+				links = [];
 			}
 
 			if(links.length == 0) {
@@ -223,42 +235,83 @@ jawfr.connect(login.ua, login.client, login.secret, login.user, login.pw).bind({
 
 		}).each(function(link) {
 			
-			var best = link.repost[0];
-			for(var r of link.repost) {
-				if(r.dnr < best.dnr) {
-					best = r;
+			return jawfr.getLinks(link.repost.map(function(link){return link.name})).bind({dblinks:this.dblinks})
+			.then(function(reposts){
+
+				this.l = jawfr.asLink(link);
+				
+
+				reposts.filter(function(link){return link.preview;});
+
+				if(reposts.length == 0) {
+					this.l.report("probably a repost, but I can't find the images for what they are [the posts were deleted/removed]");
+					throw "it was deleted"
 				}
-			}
 
-			console.log(link.name + "=>" + best.name);
-			this.dblinks.update({"name": link.name}, {$set:{"repost": link.repost}});
+				this.best = link.repost[0];
+				this.best_i = 0;
+				for(var i = 0; i < link.repost.length; i++) {
+					
+					if(link.repost[i].dnr < this.best.dnr) {
+						this.best = link.repost[i];
+						this.best_i = i;
+					}
+				}
 
-			var suffix = "_masked.jpg";
-			if(best.text) {
-				suffix = ".jpg"
-			}
+				console.log(link.name + "=>" + this.best.name);
+				this.dblinks.update({"name": link.name}, {$set:{"repost": link.repost}});
 
-			return readImageAsync("./" + best.name + suffix).bind({best:best, suffix:suffix})
-			.then(function(i1) {
+				this.suffix = "_masked.jpg";
+				if(this.best.text) {
+					this.suffix = ".jpg"
+				}
+
+				var loc = reposts[this.best_i].preview.images[0].source.url;
+
+				if(reposts[this.best_i].preview.images[0].source.width * reposts[this.best_i].preview.images[0].source.height > 2000000 )
+					loc = reposts[this.best_i].preview.images[0].resolutions[reposts[this.best_i].preview.images[0].resolutions.length - 1].url;
+			  	var stream = request(loc).pipe(fs.createWriteStream("./second_" + this.best.name + ".jpg"));
+			 	return new Promise(function(resolve,reject){
+			    	stream.on("finish", function(){
+			         	resolve();
+				    });
+			    })
+			}).then(function(){
+
+				return readImageAsync("./second_" + this.best.name + ".jpg");
+			}).then(function(image){
+				if(this.best.text) {
+					return image;
+				}
+				return maskTextAsync(image);
+			}).then(function(i1){
 				this.i1 = i1;
 				return readImageAsync("./" + link.name + this.suffix)
 			}).then(function(i2){
 				this.i2 = i2;
+				try {
+					fs.unlinkSync("./second_" + this.best.name + ".jpg");
+				}
+				catch(err) {
+					console.log("file misssing");
+				}
 				return similarityAsync(this.i1,this.i2);
 			}).then(function(res){
-				return res[0].save("./"+ link.name+".jpg");
+				return res[0].save("./"+ link.name+"_match.jpg");
 			}).then(function(){
-				return imgur.uploadAsync("./"+ link.name+".jpg");
+				return imgur.uploadAsync("./"+ link.name+"_match.jpg");
 			}).then(function(im_link) {
 				console.log(im_link.data.link);
 
-				let l = jawfr.asLink(link);
-				//l.report("probably a repost, check my comment for a link");
-				return l.reply("my bot thinks this is a repost of /r/facepalm/comments/" + this.best.name.slice(3) + " with: \n\n" + this.best.res.nfirst.toString() + "\n\n" + this.best.res.sfirst.toString() + "\n\n" + this.best.res.nfirst_text.toString() + "\n\n" + this.best.res.sfirst_text.toString() + "\n\nthere are " + (link.repost.length - 1) + " other posts it might match.\n\n [Matched points](" + im_link.data.link +")");
-			});
+				return this.l.reply("my bot thinks this is a repost of /r/"+subreddit+"/comments/" + this.best.name.slice(3) + " with: \n\n" + this.best.res.nfirst.toString() + "\n\n" + this.best.res.sfirst.toString() + "\n\n" + this.best.res.nfirst_text.toString() + "\n\n" + this.best.res.sfirst_text.toString() + "\n\nthere are " + (link.repost.length - 1) + " other posts it might match.\n\n [Matched points](" + im_link.data.link +")");
+			}).catch(function(err) {
+				console.log(err);
+			})
 
 		}).catch(function(err) {
-			console.log(err);
+			if(err != "no new links"){
+				console.log(err);
+			}
 		}).then(function(){
 
 			// we're all done with this set of links; start on the next set
